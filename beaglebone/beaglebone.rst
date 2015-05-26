@@ -5,6 +5,11 @@ BeagleBone Black
 AM355x Sitara Technical reference:
 http://www.ti.com/lit/ug/spruh73l/spruh73l.pdf
 
+System Reference manual:
+https://github.com/CircuitCo/BeagleBone-Black/blob/master/BBB_SRM.pdf?raw=true
+
+Schematics (rev C):
+https://github.com/CircuitCo/BeagleBone-Black/blob/master/BBB_SCH.pdf?raw=true
 
 U-Boot
 ======
@@ -42,6 +47,11 @@ I/O
 
 Pinmux offsets in *9.3.1 CONTROL_MODULE Registers* in reference
 manual.
+
+Leds
+----
+
+See `/sys/devices/leds/`.
 
 Yocto
 =====
