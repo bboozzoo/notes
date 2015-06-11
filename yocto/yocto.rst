@@ -31,6 +31,10 @@ Recipes
 Disable certain recipes
 +++++++++++++++++++++++
 
+Set `BBMASK` to disable certain recipes. The recipes are not even
+parsed. Note, `BBMASK` is a single regexp, must match all masked
+recipes.
+
 BBMASK ?= ".*/meta-ti/recipes-misc/(images|payload)/"
 
 wic
