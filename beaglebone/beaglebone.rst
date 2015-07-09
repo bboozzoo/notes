@@ -90,6 +90,7 @@ Yocto
 =====
 
 Machine setting::
+
    MACHINE = "beaglebone"
 
 Use `meta-ti`. **NOTE**: 3.14 kernel has IPv6 disabled, will trigger
@@ -98,3 +99,5 @@ issues with `systemd-networkd`.
 As of writing this text the current U-Boot is::
 
   U-Boot 2014.07 (Jun 01 2015 - 13:54:58)
+
+U-Boot tools (`fw_{setenv, printenv}`)are in `u-boot-fw-utils`.
