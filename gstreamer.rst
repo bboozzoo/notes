@@ -1,6 +1,9 @@
 gstreamer
 =========
 
+Defined types:
+http://gstreamer.freedesktop.org/data/doc/gstreamer/head/pwg/html/section-types-definitions.html
+
 Debugging
 ---------
 
