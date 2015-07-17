@@ -42,3 +42,33 @@ HTTP
 ~~~~
 
 Use `http-launch`: https://github.com/sdroege/http-launch
+
+Coding
+------
+
+`multiudpsink`
+~~~~~~~~~~~~
+
+Parent class of `udpsink`. Supports streaming to multiple clients. Add
+clients by triggering emission of `add`, remove by emitting `remove`
+signal.
+
+Connect to source named `stream`::
+
+  Gst.Pipeline pipe = (Gst.Pipeline)
+                        Gst.parse_launch("videotestsrc ! x264enc  ! rtph264pay name=stream");
+  var endpoint = pipe.get_by_name("stream");
+  var udpsink = Gst.ElementFactory.make("multiudpsink", null);
+  // add to pipeline
+  pipe.add(udpsink);
+  // link to sink
+  endpoint.link(udpsink);
+
+
+Trigger client add::
+
+  # C
+  g_signal_emit_by_name(G_OBJECT(src), "add", host, port, NULL);
+
+  # Vala
+  Signal.emit_by_name(udpsink, "add", host, port);
