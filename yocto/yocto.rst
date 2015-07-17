@@ -37,6 +37,28 @@ recipes.
 
 BBMASK ?= ".*/meta-ti/recipes-misc/(images|payload)/"
 
+g-i-r
++++++
+
+**NOTE**: OE packages have introspection disabled!.
+
+Does not work when cross-compiled. Use meta-gir_.
+
+.. _meta-gir: https://github.com/meta-gir/meta-gir
+
+Vala
+++++
+
+Most VAPIs shipped with Vala out of the box. VAPI is generated based
+on g-i-r output, not usable when doing cross-compilation. Possible
+solution:
+
+- build package on the host
+- generate `*.vapi` and `*.deps`
+- ship VAPI files with `*.bbappend*`, install files into
+  `${D}${datadir}/vala/vapi`
+
+
 wic
 ---
 
