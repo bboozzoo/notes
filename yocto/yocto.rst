@@ -73,3 +73,34 @@ Build name
 To put a build name in `/etc/version` set `BUILDNAME` in on of the
 cont files (possibly `local.comf`, or `auto.conf` if triggered from
 Jenkins).
+
+kernel
+------
+
+Config fragments
+++++++++++++++++
+
+For kernels that do not support config fragments, use *Poor Man's*
+config fragment support::
+
+  FILESEXTRAPATHS_prepend := "${THISDIR}/${PN}-${PV}:"
+  # reorder *.cfg files as needed
+  SRC_URI += "\
+        file://usbserial.cfg \
+        file://bridge.cfg \
+	"
+
+  do_configure_prepend() {
+
+    cfgs="${@ ' '.join([n for n in src_patches(d, True) if n.endswith('.cfg')])}"
+
+    bbnote "configs: ${cfgs}"
+    if [ -n "${cfgs}" ]; then
+        for cfg in "${cfgs}"; do
+            bbnote "Applying config ${cfg}"
+            cat ${cfg} >> ${WORKDIR}/defconfig
+        done
+    fi
+  }
+
+
