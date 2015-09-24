@@ -1,0 +1,50 @@
+* Wandboard
+
+** GPIO Leds
+
+Assuming that the following LEDs are present:
+
+| label   | pin         | sysfs   | JP-4 pin |
+|---------+-------------+---------+----------|
+| wifi    | GPIO(1, 24) | gpio24  |       10 |
+| green   | GPIO(7, 8)  | gpio200 |       12 |
+| ao-link | GPIO(3, 26) | gpio90  |       14 |
+| com-a   | GPIO(3, 8)  | gpio72  |       16 |
+| com-b   | GPIO(4, 5)  | gpio101 |       18 |
+|         |             |         |          |
+
+The following entries in dts will make these leds available to the
+userspace:
+
+#+BEGIN_SRC dts
+  leds {
+          compatible = "gpio-leds";
+
+          wifi {
+                  gpios = <&gpio1 24 0>;
+                  default-state = "off";
+          };
+
+          green {
+                  gpios = <&gpio7 8 0>;
+                  default-state = "off";
+          };
+
+          ao-link {
+                  gpios = <&gpio3 26 0>;
+                  default-state = "off";
+          };
+
+          com-a {
+                  gpios = <&gpio3 8 0>;
+                  default-state = "off";
+          };
+
+          com-b {
+                  gpios = <&gpio4 5 0>;
+                  default-state = "off";
+          };
+  };
+#+END_SRC
+
+Entries will appear as ~/sys/class/leds/{wifi, green, ...}~.
