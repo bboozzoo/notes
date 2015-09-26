@@ -1,0 +1,9 @@
+* 802.11
+
+** eth - wlan bridge
+
+See ~iw~ documentation:
+https://wireless.wiki.kernel.org/en/users/documentation/iw
+
+Either enable WDS on a new phy interface, or enable 4addr mode.
+Then wpa_supplicant needs ~-b bridge-iface~ in command line.
