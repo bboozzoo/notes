@@ -1,0 +1,18 @@
+* ARM builds
+
+  Quick build path:
+
+  #+BEGIN_SRC sh
+  export ARCH=arm
+  export CROSS_COMPILE=arm-linux-gnueabihf-
+  make vexpress_defconfig
+  # adjust as needed
+  make menuconfig
+  make
+  make INSTALL_MOD_PATH=<path-to-arm-sysroot> modules_install
+
+  #+END_SRC
+
+  Use ~qemu-system-arm -machine vexpress-a9 -dtb
+  arch/arm/boot/dts/vexpress-v2p-ca9.dtb~. Console is available at
+  ~ttyAMA0~ on Versatile Express.
