@@ -1,5 +1,8 @@
 * ARM builds
 
+  Make sure that the cross-compiler setup is available in $PATH,
+  specifically one with the prefix used in CROSS_COMPILE.
+
   Quick build path:
 
   #+BEGIN_SRC sh
