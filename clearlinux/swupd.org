@@ -1,0 +1,189 @@
+* swupd
+
+** swupd-client
+   - license: GPLv2 & BSD (bsdiff)
+   - version 2.88
+   - no public git repo?
+
+*** bundles
+
+    List of installed bundles: ~/usr/share/clear/bundles~ (just empty
+    files)
+
+*** current version
+
+    Version number in ~/usr/share/clear/version~
+
+*** update/bundle installation and download
+
+**** hash
+     <<sec:hash>>
+
+     - every file/manifest/change is identified by HMAC-SHA256
+     - key computation depends on type of operation/file:
+       - deleted file: all zeros
+       - key computed as HMAC-256:
+         - key is update stat (~struct update_stat~),
+         - data is xattrs (if enabled) or just empty data
+         - if xattrs is disabled ~key = H(update_stat ++ H(update_stat))~
+         - same key computation methods for all file types
+       - for symlink data is the target path
+       - for regular file, the file contents
+       - directory, the path
+
+**** manifests
+
+    - kept in a directory per version ~/var/lib/swupd/<version>~, ex. ~/var/lib/swupd/5920~
+    - manifest is complete medatadata?
+    - special one - ~Manifest.MoM~ (Manifest-of-Manifests?), list of
+      bundles, hash == hash of bundle manifest?
+    - ~Manifest.<bundle-name>~, ex. for ~iot~ bundle the manifest is
+      named ~Manifest.iot~
+    - manifest format (based on ~Manifest.iot~):
+      #+BEGIN_SRC text
+        MANIFEST        3
+        version:        5920
+        previous:       5910
+        filecount:      17772
+        timestamp:      1453350282
+        contentsize:    5211764
+
+        .d..    0000000000000000000000000000000000000000000000000000000000000000        2960    /usr/share/man/man1/m4.1
+        .d..    0000000000000000000000000000000000000000000000000000000000000000        2960    /usr/share/info/m4.info-2
+        .d..    0000000000000000000000000000000000000000000000000000000000000000        2960    /usr/share/info/m4.info-1
+        .d..    0000000000000000000000000000000000000000000000000000000000000000        2960    /usr/share/info/m4.info
+        .d..    0000000000000000000000000000000000000000000000000000000000000000        2960    /usr/bin/m4
+        .d..    0000000000000000000000000000000000000000000000000000000000000000        3020    /usr/share/soletta/flow/descriptions/fs.json
+        .d..    0000000000000000000000000000000000000000000000000000000000000000        3020    /usr/lib64/soletta/modules/flow/fs.so
+        F...    507c5471a1b89f122604ee6541e7b592ff9730ea7a9db2cd5f0d65341484f260        4360    /usr/share/soletta/flow/descriptions/wallclock.json
+        F...    edf4aa0a0d9708598413bf08c075b77353b6b7c760815eb2a33c68e1f36fca31        4360    /usr/share/soletta/flow/descriptions/unix-socket.json
+        F...    20e69ad650447c040b947aa31b82819e82bc15c3b7abf18c6c6674d44cb3bd94        4360    /usr/share/soletta/flow/descriptions/udev.json
+        F...    6fa83af89769535bbb13470b8c8cfb5dd579878bdf46fb03573117af14e5f766        4360    /usr/share/soletta/flow/descriptions/trigonometry.json
+        F...    149c8583b0a7cfe734131fb1b0d58501b78418fce384990b306d703d1c5268b7        4360    /usr/share/soletta/flow/descriptions/timer.json
+        F...    21128a72f9b4dd2a01ea8026069d91a5c50b617e32ef9cc4c5b1b34fe531f0da        4360    /usr/share/soletta/flow/descriptions/thingspeak.json
+        F...    1433082e1ece95fedd67c393e46fd6dc9dab14680e43b95111d49a9b141a47ee        4360    /usr/share/soletta/flow/descriptions/temperature.json
+        F...    182b43f2c935fa4aa3f5d42c36d6d1ecc30e082c52109c23fb209d4406a52af5        4360    /usr/share/soletta/flow/descriptions/servo-motor.json
+        F...    25b37fba85f98b064127799ea4fd5b9707ec6957c73ef87568779f6cada9acbf        4360    /usr/share/soletta/flow/descriptions/random.json
+        <snip ........>
+        F...    89786fa8bad354675fae3c5976b32518656352848991f6458b7a42c45b574eb3        4360    /usr/lib64/libicuuc.so.55.1
+        L...    16fb04308b3545dc93004c25b088a48f5299b2ef8602c6abe62f40161aceede5        4360    /usr/lib64/libicuuc.so.55
+        <snip ........>
+        D...    54eff3f4e0339ce30eb644c69cae4d9a03a8cf21d59d1960df39763464f6f467        4790    /usr/share/man/mann
+        F...    ff97d611c04d27942737068bd09c3a5d132ee717994ec0b09bbf105210ebc2a3        4790    /usr/share/man/man7/graphviz.7
+        D...    25f2534e9afe39c514c9cb593c3f8ad8d13bd6b45574c633ad25014e1bacd602        4790    /usr/share/man/man7
+        F...    d152a295b573a755403bdb6e988cbc885765589b453cead165c20379e800b061        4790    /usr/share/man/man3/xdot.3
+      #+END_SRC
+    - each entry is mapped to ~struct file~, see ~include/swupd.h~
+    - field breakdown:
+        #+BEGIN_SRC text
+          F...    d152a295b573a755403bdb6e988cbc885765589b453cead165c20379e800b061        4790    /usr/share/man/man3/xdot.3
+          <op>    <hash>                                                                  <lastc> <path>
+        #+END_SRC
+      1) ~<op>~
+         - <xxxx> entry in manifest sets up file type, roughtly mapped to
+           operation to be executed
+         - types:
+           | 0 | 1 | 2 | 3 | type         |
+           |---+---+---+---+--------------|
+           | D | . | . | . | directory    |
+           | L | . | . | . | symlink      |
+           | F | . | . | . | regular file |
+           | M | . | . | . | manifest     |
+           | . | d | . | . | deleted      |
+           | . | . | C | . | config       |
+           | . | . | s | . | state?       |
+           | . | . | b | . | boot         |
+           | . | . | . | r |              |
+      2) ~<hash>~
+         [[sec:hash]]
+      3) ~<lastc>~
+         - version when last change occurred
+         - used when building a list of files for update, see
+           ~manifest.c:create_update_list~, update list will contain
+           files with higher ~<lastc>~ or with different hash
+
+**** download
+    - file by file download (see ~download.c:file_download()~)
+    - no file names are in use, file hash only
+    - from: ~https://download.clearlinux.org/update/5920/files/*.tar~
+    - to: ~/var/lib/swupd/download/.*.tar~
+    - file donwload in parallell, curl_multi
+    - parallel downloads (between 15-25 downloads)
+    - downloads tracked in ~swupd_curl_hashmap~ (hash map w/
+      collisions list), first byte of hash is used as an index
+
+**** staging
+     <<sec:staging>>
+     - deals with complete files
+     - verify that a tar contains only one file with a hash
+     - tar'ed files are untar'ed into ~/var/lib/swupd/staged~
+     - see ~staging.c:do_staging()~
+     - files staged into filesystem have ~.update.~ prefix, ex:
+       ~/bin/.update.ls~
+
+**** update
+     - high level flow:
+       1) check last version
+       2) download manifests
+       3) consolidate manifests
+       4) run pre upgrade scripts
+          - seems to run only one script if ~/usr/bin/clr_pre_update.sh~?
+          - TODO no policy for names for pre-update scripts in bundles?
+       5) build list of files for update
+       6) download packs
+          - updates can come as a pack of updated files
+          - a tar'ed set of files (~staged/*~ and ~delta/*~)
+          - untar to ~/var/lib/swupd~
+       7) apply updates one by one
+          1) deltas, if applied, are applied via bsdiff
+             - the base version of file must exist in rootfs
+             - rebuilt files go to staging
+          2) download remaining files one by one (HTTP pipelining is enabled)
+          3) perform staging of all files into rootfs, see [[sec:staging]]
+          4) rename files to their target names
+          5) sync()
+       8) post-update scripts
+          - only triggers ~update-triggers.target~
+          - should bundles link their scripts to
+            ~update-triggers.target.wants~?
+          - target is currently defined as:
+            #+BEGIN_SRC conf
+              [Unit]
+              Description=Post system update triggers
+              Wants=ldconfig-trigger.service
+              Wants=mandb-trigger.service
+              Wants=python-trigger.service
+              Wants=catalog-trigger.service
+              Wants=tmpfiles-trigger.service
+              Wants=locale-archive-trigger.service
+              Wants=systemd-modules-trigger.service
+            #+END_SRC
+            - ldcofig - update cache
+            - python - runs ~/usr/bin/clr-python-timestamp /usr/lib/python2.7 /usr/share/httpd/horizon~
+              - resets timestamps to avoid compilation?
+            - catalog - update journald's messages catalog
+     - same file in multiple manifests?
+       - see ~manifest.c:consolidate_submanifests()~
+       - decision matrix
+         #+BEGIN_SRC text
+                   | File 2:
+                   |  A'    B'    C'    D'
+           File 1: |------------------------
+              A    |  -  |  2  |  2  |  2  |
+              B    |  1  |  -  |  2  |  2  |
+              C    |  1  |  1  |  -  |  X  |
+              D    |  1  |  1  |  X  |  X  |
+
+           State for file1 {A,B,C,D}
+                 for file2 {A',B',C',D'}
+               A:  is_deleted && !is_rename
+               B:  is_deleted &&  is_rename
+               C: !is_deleted && (file1->hash == file2->hash)
+               D: !is_deleted && (file1->hash != file2->hash)
+
+           Action
+               -: Don't Care   - choose/remove either file
+               X: Error State  - remove both files, LOG error
+               1: choose file1 - remove file2
+               2: choose file2 - remove file1
+         #+END_SRC
