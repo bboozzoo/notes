@@ -104,3 +104,65 @@ config fragment support::
   }
 
 
+Erlang
+------
+
+See `meta-erlang`. Recipe::
+
+  inherit erlang
+  # if uses rebar
+  inherit rebar
+
+Rebar
++++++
+
+Fetch deps before building::
+
+  do_rebar_deps() {
+      cd ${S}
+      ./rebar get-deps
+  }
+
+  do_rebar_deps[deptask] = "do_populate_sysroot"
+  addtask rebar_deps after do_unpack before do_patch
+
+Ports
++++++
+
+Ports will require `-lerl_interface -lei`. Broken when running with
+`rebar` set ``ERL_EI_LIBDIR` otherwise it will pick a native libdir::
+
+  do_compile() {
+      ei_libdir=$(echo ${STAGING_LIBDIR}/erlang/lib/erl_interface-*/lib)
+      ERL_EI_LIBDIR=$ei_libdir ./rebar compile
+  }
+
+`rebar` is broken wrt. cross compilation, it's not possible to
+override `ERL_LDFLAGS`. It gets overwritten with the default
+always. Every veriable that is expandable in the default env See:
+https://github.com/rebar/rebar/issues/348 default env:
+https://github.com/rebar/rebar/blob/master/src/rebar_port_compiler.erl#L572
+As a workaround, set `ERL_EI_LIBDIR` to the actual Erlang's lib
+sysroot, so a patches `do_compile` could look like this::
+
+  ERL_CFLAGS = "-I${STAGING_LIBDIR}/erlang/usr/include"
+  ERL_LDFLAGS = "-L${STAGING_LIBDIR}/erlang/usr/lib -lerl_interface -lei"
+  ERL_EI_LIBDIR = "${STAGING_LIBDIR}/erlang/usr/lib"
+
+  do_compile() {
+
+      # rebar is shit and ERL_LDFLAGS cannot be overridden because it's
+      # expandable, see https://github.com/rebar/rebar/issues/348 try to
+      # workaround by setting ERL_EI_LIBDIR that is used in the
+      # following context:
+      # ERL_LDFLAGS=-L$ERL_EI_LIBDIR -lerl_interface -lei'
+      oe_runmake ERL_CFLAGS=${ERL_CFLAGS} ERL_EI_LIBDIR=${ERL_EI_LIBDIR} REBAR='rebar -vv' release
+  }
+
+Note, `ERL_CLFAGS` must to be set to something meaningful like this::
+
+  ERL_CFLAGS = "-I${STAGING_LIBDIR}/erlang/usr/include"
+
+Otherwise rebar compiled ports will pick up native headers, and you're
+left with debugging why integers passed to/from port have
+unexplainable values.
