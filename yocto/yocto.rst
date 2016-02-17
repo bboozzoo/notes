@@ -22,6 +22,14 @@ Override directory locations, ex::
   SSTATE_DIR = "/home/mborzecki/yocto/sstate-cache"
   RM_OLD_IMAGES = "1"
 
+Tasks
+-----
+
+`do_populate_sysroot` installs `DEPENDS`
+
+To have `DEPENDS` done before running a task::
+
+  do_sth[deptask] = "do_populate_sysroot""
 
 Recipes
 -------
