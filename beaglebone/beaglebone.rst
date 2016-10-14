@@ -66,6 +66,10 @@ U-Boot enviroment partitions are read-only by default. To disable RO::
 
   echo 0 > /sys/block/mmcblk0boot1/force_ro
 
+Disable booting from internal eMMC::
+
+  mmc dev 1
+  mmc erase 0 512
 
 Linux
 =====
