@@ -210,3 +210,36 @@ unexplainable values.
       ~: oe-pkgdata-util find-path \*ctr.ko\*
       kernel-module-ctr: /lib/modules/4.1.10/kernel/crypto/ctr.ko
     #+END_SRC
+
+** Cache
+
+*** sstate
+
+   Set ~SSTATE_MIRRORS~ (~PATH~ has special meaning, will be replaced with cache
+   entry path by bb):
+
+   #+BEGIN_SRC conf
+     SSTATE_MIRRORS = " \
+     file://.* http://172.27.0.30:9009/sstate-cache/PATH"
+   #+END_SRC
+
+   See task hash differences between cache & local build:
+
+   #+BEGIN_SRC sh
+     bitbake -S printdiff core-image-minimal
+   #+END_SRC
+
+   When exporting do not use `python3 -m http.server` as bb will hammer down the
+   server with requests, use something reasonable like [[https://caddyserver.com/][caddy]].
+
+   If that fails, inspect ~bitbake -DDD <target>~, look for ~SState~ debug logs.
+
+*** downloads
+
+   #+BEGIN_SRC conf
+     PREMIRRORS_prepend = "\
+      git://.*/.* http://172.27.0.30:9009/downloads/ \n \
+      ftp://.*/.* http://172.27.0.30:9009/downloads/ \n \
+      http://.*/.* http://172.27.0.30:9009/downloads/ \n \
+      https://.*/.* http://172.27.0.30:9009/downloads/ \n"
+   #+END_SRC
