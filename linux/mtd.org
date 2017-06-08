@@ -7,6 +7,7 @@
 - these were supposedly resolved with earlier patch - https://patchwork.ozlabs.org/patch/285464/
 - 2 banks of flash
   - 64MB each, start at 0x04000000 and 0x44000000
+  - see http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dui0448i/CIAGFCHA.html for memory mapping
   - uboot ~flinfo~ lists 128 sectors
 - qemu defines 2 devices
   - there is a file for each device (vexpress.flash0, vexpress.flash1)
@@ -43,6 +44,23 @@
       bank-width = <4>;
     };
 #+END_SRC
+
+- mtdparts
+
+  Modify MTD partitioning on kernel command line, by passing ~mtdparts~.
+
+  Carve out 2 partitions (rootfs1 and rootfs2) both 32MB, rootfs1 starts at 0x0,
+  rootfs2 follows, booth hooked to flash device ~40000000.flash~.
+
+  #+BEGIN_SRC text
+    root@vexpress-qemu:~# cat /proc/cmdline
+    root=/dev/mmcblk0p2 console=tty0 console=ttyAMA0,115200n8 mtdparts=40000000.flash:32m@0(rootfs1),32m(rootfs2)
+    root@vexpress-qemu:~# cat /proc/mtd
+    dev:    size   erasesize  name
+    mtd0: 02000000 00080000 "rootfs1"
+    mtd1: 02000000 00080000 "rootfs2"
+    mtd2: 02000000 00001000 "48000000.psram"
+  #+END_SRC
 
 *** Commands
 
