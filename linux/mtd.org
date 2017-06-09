@@ -12,7 +12,7 @@
 - 2 banks of flash
   - 64MB each, start at 0x04000000 and 0x44000000
   - see http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dui0448i/CIAGFCHA.html for memory mapping
-  - uboot ~flinfo~ lists ~~128~~ 256 sectors
+  - uboot ~flinfo~ lists +128+ 256 sectors
     #+BEGIN_SRC text
       => flinfo
 
