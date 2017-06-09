@@ -3,8 +3,12 @@
 - use NOR flash (-pflash - pflash_cfi01 driver)
 ** vexpress-a9
 
-- allegedly problems with writes - http://u-boot.10912.n7.nabble.com/U-boot-and-UBI-problem-with-vexpress-board-td209805.html
-- these were supposedly resolved with earlier patch - https://patchwork.ozlabs.org/patch/285464/
+- *PROBLEMS*
+  - allegedly problems with writes - http://u-boot.10912.n7.nabble.com/U-boot-and-UBI-problem-with-vexpress-board-td209805.html
+  - these were supposedly resolved with earlier patch - https://patchwork.ozlabs.org/patch/285464/
+  - ML thread is incorrect, flash problems are fixed by this patch:
+    http://git.qemu.org/?p=qemu.git;a=commitdiff;h=feb0b1aa11f14ee71660aba46b46387d1f923c9e
+    the patch is included in 2.9.0 release
 - 2 banks of flash
   - 64MB each, start at 0x04000000 and 0x44000000
   - see http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dui0448i/CIAGFCHA.html for memory mapping
