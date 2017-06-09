@@ -12,7 +12,21 @@
 - 2 banks of flash
   - 64MB each, start at 0x04000000 and 0x44000000
   - see http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dui0448i/CIAGFCHA.html for memory mapping
-  - uboot ~flinfo~ lists 128 sectors
+  - uboot ~flinfo~ lists ~~128~~ 256 sectors
+    #+BEGIN_SRC text
+      => flinfo
+
+      Bank # 1: CFI conformant flash (32 x 16)  Size: 64 MB in 256 Sectors
+        Intel Extended command set, Manufacturer ID: 0x89, Device ID: 0x0018
+        Erase timeout: 16384 ms, write timeout: 3 ms
+        Buffer write timeout: 3 ms, buffer size: 2048 bytes
+
+        Sector Start Addresses:
+        40000000 E RO   40040000 E RO   40080000 E      400C0000 E      40100000 E
+        40140000 E      40180000 E      401C0000 E      40200000 E      40240000 E
+        ...
+    #+END_SRC
+
 - qemu defines 2 devices
   - there is a file for each device (vexpress.flash0, vexpress.flash1)
   - ~-drive file=nor0,if=pflash -drive file=nor1,if=pflash~
